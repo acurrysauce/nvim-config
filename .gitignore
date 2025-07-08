@@ -1,0 +1,11 @@
+# Ignore lazy.nvim plugin directory
+lazy-lock.json
+
+# Ignore any local/temporary files
+*.log
+*.tmp
+.DS_Store
+
+# Ignore plugin data directories (if any)
+plugin/
+lua/plugins/lazy-lock.json
