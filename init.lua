@@ -117,6 +117,20 @@ require("lazy").setup({
       -- Setup Python debugging
       require("dap-python").setup("python")
       
+      -- Auto-load project-specific DAP configs
+      local function load_project_dap_config()
+        local project_dap_file = vim.fn.getcwd() .. "/.nvim/dap.lua"
+        if vim.fn.filereadable(project_dap_file) == 1 then
+          dofile(project_dap_file)
+        end
+      end
+      
+      -- Load project config on startup and when changing directories
+      load_project_dap_config()
+      vim.api.nvim_create_autocmd("DirChanged", {
+        callback = load_project_dap_config,
+      })
+      
       -- Auto open/close DAP UI
       dap.listeners.after.event_initialized["dapui_config"] = function()
         dapui.open()
@@ -141,5 +155,44 @@ require("lazy").setup({
       vim.keymap.set("n", "<leader>dl", dap.run_last)
       vim.keymap.set("n", "<leader>du", dapui.toggle)
     end,
+  },
+  
+  -- Telescope fuzzy finder
+  {
+    "nvim-telescope/telescope.nvim",
+    tag = "0.1.8",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope-fzf-native.nvim",
+    },
+    config = function()
+      local telescope = require("telescope")
+      local builtin = require("telescope.builtin")
+      
+      telescope.setup({
+        defaults = {
+          mappings = {
+            i = {
+              ["<C-h>"] = "which_key"
+            }
+          }
+        }
+      })
+      
+      -- Keybindings
+      vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find files" })
+      vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live grep" })
+      vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Find buffers" })
+      vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Help tags" })
+      vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Recent files" })
+      vim.keymap.set("n", "<leader>fs", builtin.lsp_document_symbols, { desc = "Document symbols" })
+      vim.keymap.set("n", "<leader>fw", builtin.lsp_workspace_symbols, { desc = "Workspace symbols" })
+    end,
+  },
+  
+  -- Telescope FZF extension (optional but recommended)
+  {
+    "nvim-telescope/telescope-fzf-native.nvim",
+    build = "make",
   },
 })
