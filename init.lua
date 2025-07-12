@@ -1,5 +1,9 @@
 vim.opt.clipboard:append("unnamedplus")
 
+-- Line numbers
+vim.opt.nu = true
+vim.opt.relativenumber = true
+
 -- Set leader key to space
 vim.g.mapleader = " "
 
@@ -30,10 +34,13 @@ require("lazy").setup({
   -- Mason LSP config integration
   {
     "williamboman/mason-lspconfig.nvim",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "neovim/nvim-lspconfig",
+    },
     config = function()
       require("mason-lspconfig").setup({
         ensure_installed = { "lua_ls", "pyright", "ts_ls" },
-        automatic_installation = true,
       })
     end,
   },
@@ -204,6 +211,15 @@ require("lazy").setup({
     },
     config = function()
       vim.keymap.set("n", "<leader>gg", "<cmd>LazyGit<cr>", { desc = "Open LazyGit" })
+    end,
+  },
+  
+  -- Tokyo Night colorscheme
+  {
+    "folke/tokyonight.nvim",
+    priority = 1000,
+    config = function()
+      vim.cmd("colorscheme tokyonight")
     end,
   },
 })
