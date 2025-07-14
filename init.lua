@@ -171,6 +171,7 @@ require("lazy").setup({
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-telescope/telescope-fzf-native.nvim",
+      "nvim-treesitter/nvim-treesitter",
     },
     config = function()
       local telescope = require("telescope")

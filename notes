@@ -1,0 +1,9 @@
+linux packages:
+- nodejs, npm
+- jq
+- nginx
+- neovim
+- gh (GitHub CLI)
+- direnv
+- ripgrep
+
