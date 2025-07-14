@@ -223,4 +223,127 @@ require("lazy").setup({
       vim.cmd("colorscheme tokyonight")
     end,
   },
+  
+  -- Multi-cursor support
+  {
+    "mg979/vim-visual-multi",
+    config = function()
+      -- Optional: Configure vim-visual-multi settings
+      vim.g.VM_maps = {
+        ["Find Under"] = "<C-n>",
+        ["Find Subword Under"] = "<C-n>",
+        ["Select All"] = "<C-A>",
+        ["Start Regex Search"] = "<C-/>",
+        ["Add Cursor Down"] = "<C-Down>",
+        ["Add Cursor Up"] = "<C-Up>",
+      }
+    end,
+  },
 })
+
+-- Custom help keybindings command
+vim.api.nvim_create_user_command('HK', function()
+  local help_content = {
+    "═══════════════════════════════════════════════════════════════",
+    "                      NVIM KEYBINDINGS HELP",
+    "═══════════════════════════════════════════════════════════════",
+    "",
+    "🔧 BASIC NVIM",
+    "  Ctrl+r              - Redo", 
+    "  Ctrl+o              - Jump back",
+    "  Ctrl+i              - Jump forward",
+    "",
+    "💡 SEARCH & REPLACE",
+    "  *                   - Search word under cursor",
+    "  /pattern            - Search for pattern",
+    "  :noh                - Clear search highlighting",
+    "  :%s/old/new/g       - Replace all occurrences",
+    "  cgn                 - Change next search match",
+    "",
+    "📁 BUFFERS & NAVIGATION",
+    "  :ls                 - List buffers",
+    "  :b1, :b2            - Switch to buffer number",
+    "  :bn                 - Next buffer",
+    "  :bp                 - Previous buffer",
+    "  Ctrl+^              - Toggle last buffer",
+    "",
+    "🔍 TELESCOPE (Leader = Space)",
+    "  <leader>ff          - Find files",
+    "  <leader>fg          - Live grep",
+    "  <leader>fb          - Find buffers",
+    "  <leader>fh          - Help tags",
+    "  <leader>fr          - Recent files",
+    "  <leader>fs          - Document symbols",
+    "  <leader>fw          - Workspace symbols",
+    "",
+    "🎯 VIM-VISUAL-MULTI",
+    "  Ctrl+n              - Select word under cursor",
+    "  Ctrl+A              - Select all instances",
+    "  Ctrl+Down/Up        - Add cursor above/below",
+    "  q                   - Skip current selection",
+    "  Q                   - Remove current cursor",
+    "  Esc                 - Exit multi-cursor mode",
+    "",
+    "🐛 DAP DEBUGGING",
+    "  <leader>db          - Toggle breakpoint",
+    "  <leader>dc          - Continue",
+    "  <leader>ds          - Step over",
+    "  <leader>di          - Step into",
+    "  <leader>do          - Step out",
+    "  <leader>dr          - Open repl",
+    "  <leader>du          - Toggle UI",
+    "",
+    "📝 LSP",
+    "  gd                  - Go to definition",
+    "  K                   - Hover documentation",
+    "  <leader>rn          - Rename",
+    "  <leader>ca          - Code actions",
+    "  [d                  - Previous diagnostic",
+    "  ]d                  - Next diagnostic",
+    "",
+    "🔧 TERMINAL MODE",
+    "  Ctrl+\\ Ctrl+n      - Exit terminal mode",
+    "",
+    "💡 SEARCH & REPLACE",
+    "  *                   - Search word under cursor",
+    "  /pattern            - Search for pattern",
+    "  :noh                - Clear search highlighting",
+    "  :%s/old/new/g       - Replace all occurrences",
+    "  cgn                 - Change next search match",
+    "",
+    "═══════════════════════════════════════════════════════════════",
+    "Press 'q' to close this help buffer",
+    "═══════════════════════════════════════════════════════════════",
+  }
+  
+  -- Create a new buffer
+  local buf = vim.api.nvim_create_buf(false, true)
+  
+  -- Set buffer content first while it's modifiable
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, help_content)
+  
+  -- Then set buffer options
+  vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
+  vim.api.nvim_buf_set_option(buf, 'swapfile', false)
+  vim.api.nvim_buf_set_option(buf, 'modifiable', false)
+  vim.api.nvim_buf_set_option(buf, 'readonly', true)
+  
+  -- Open in a split window
+  vim.cmd('split')
+  vim.api.nvim_win_set_buf(0, buf)
+  
+  -- Set window height
+  vim.api.nvim_win_set_height(0, math.min(#help_content + 2, vim.o.lines - 5))
+  
+  -- Set buffer name
+  vim.api.nvim_buf_set_name(buf, 'Keybindings Help')
+  
+  -- Map 'q' to close the buffer
+  vim.api.nvim_buf_set_keymap(buf, 'n', 'q', ':q<CR>', { noremap = true, silent = true })
+  
+  -- Set cursor to top
+  vim.api.nvim_win_set_cursor(0, {1, 0})
+end, {})
+
+-- Also create a shorter alias
+vim.api.nvim_create_user_command('Help', 'HK', {})
