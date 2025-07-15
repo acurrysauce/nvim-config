@@ -170,6 +170,25 @@ require("lazy").setup({
       -- Setup Python debugging
       require("dap-python").setup("python")
       
+      -- Override default Python DAP config to use project root as working directory
+      dap.configurations.python = {
+        {
+          type = 'python',
+          request = 'launch',
+          name = 'Launch file',
+          program = '${file}',
+          cwd = '${workspaceFolder}',  -- Use project root as working directory
+          pythonPath = function()
+            -- Try to find virtual environment, fallback to system python
+            local venv_path = vim.fn.getcwd() .. '/.venv/bin/python'
+            if vim.fn.executable(venv_path) == 1 then
+              return venv_path
+            end
+            return 'python'
+          end,
+        },
+      }
+      
       -- Auto-load project-specific DAP configs
       local function load_project_dap_config()
         local project_dap_file = vim.fn.getcwd() .. "/.nvim/dap.lua"
@@ -205,6 +224,7 @@ require("lazy").setup({
         dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
       end)
       vim.keymap.set("n", "<leader>dr", dap.repl.open)
+      vim.keymap.set("n", "<leader>dz", function() dapui.open({reset=true}) end)
       vim.keymap.set("n", "<leader>dl", dap.run_last)
       vim.keymap.set("n", "<leader>du", dapui.toggle)
     end,
@@ -359,8 +379,8 @@ vim.api.nvim_create_user_command('HK', function()
   vim.api.nvim_buf_set_option(buf, 'modifiable', false)
   vim.api.nvim_buf_set_option(buf, 'readonly', true)
   
-  -- Open in a split window
-  vim.cmd('split')
+  -- Open in a new tab
+  vim.cmd('tabnew')
   vim.api.nvim_win_set_buf(0, buf)
   
   -- Set window height
