@@ -7,18 +7,3 @@ linux packages:
 - direnv
 - ripgrep
 
-tmux layouts:
-- even-horizontal (evenly spaced vertical panes)
-- even-vertical (evenly spaced horizontal panes)
-- main-horizontal (large top pane, smaller bottom panes)
-- main-vertical (large left pane, smaller right panes)
-- tiled (all panes same size in grid)
-
-tmux layout commands:
-- Ctrl-b : select-layout <layout-name>
-- Ctrl-b Alt-1 (even-horizontal)
-- Ctrl-b Alt-2 (even-vertical)
-- Ctrl-b Alt-3 (main-horizontal)
-- Ctrl-b Alt-4 (main-vertical)
-- Ctrl-b Alt-5 (tiled)
-
