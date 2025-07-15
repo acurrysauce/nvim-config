@@ -52,10 +52,39 @@ require("lazy").setup({
       local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
       
-      -- Setup LSP servers with completion capabilities
-      lspconfig.lua_ls.setup({ capabilities = capabilities })
-      lspconfig.pyright.setup({ capabilities = capabilities })
-      lspconfig.ts_ls.setup({ capabilities = capabilities })
+      -- LSP keybindings
+      local on_attach = function(client, bufnr)
+        local opts = { buffer = bufnr, silent = true }
+        
+        -- Navigation
+        vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+        vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+        vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+        vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+        
+        -- Actions
+        vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
+        vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+        
+        -- Diagnostics
+        vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
+        vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
+        vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, opts)
+      end
+      
+      -- Setup LSP servers with completion capabilities and keybindings
+      lspconfig.lua_ls.setup({ 
+        capabilities = capabilities,
+        on_attach = on_attach 
+      })
+      lspconfig.pyright.setup({ 
+        capabilities = capabilities,
+        on_attach = on_attach 
+      })
+      lspconfig.ts_ls.setup({ 
+        capabilities = capabilities,
+        on_attach = on_attach 
+      })
     end,
   },
   
@@ -244,76 +273,41 @@ require("lazy").setup({
 -- Custom help keybindings command
 vim.api.nvim_create_user_command('HK', function()
   local help_content = {
-    "═══════════════════════════════════════════════════════════════",
-    "                      NVIM KEYBINDINGS HELP",
-    "═══════════════════════════════════════════════════════════════",
+    "═══════════════════════════════════════════════════════════════════════════════════════════════════════",
+    "                                        NVIM KEYBINDINGS HELP",
+    "═══════════════════════════════════════════════════════════════════════════════════════════════════════",
     "",
-    "🔧 BASIC NVIM",
-    "  Ctrl+r              - Redo", 
-    "  Ctrl+o              - Jump back",
-    "  Ctrl+i              - Jump forward",
+    "🔧 BASIC NVIM                      📁 BUFFERS & NAVIGATION          🔍 TELESCOPE (Leader = Space)",
+    "  u           - Undo                 :ls         - List buffers        <leader>ff  - Find files",
+    "  Ctrl+r      - Redo                 :b1, :b2    - Switch to buffer    <leader>fg  - Live grep", 
+    "  Ctrl+o      - Jump back            :bn         - Next buffer         <leader>fb  - Find buffers",
+    "  Ctrl+i      - Jump forward         :bp         - Previous buffer     <leader>fh  - Help tags",
+    "  Ctrl+u      - Scroll up half page  Ctrl+^      - Toggle last buffer  <leader>fr  - Recent files",
+    "  Ctrl+d      - Scroll down half page                                  <leader>fs  - Document symbols",
+    "  {           - Jump to prev paragraph                                 <leader>fw  - Workspace symbols",
+    "  }           - Jump to next paragraph",
     "",
-    "💡 SEARCH & REPLACE",
-    "  *                   - Search word under cursor",
-    "  /pattern            - Search for pattern",
-    "  :noh                - Clear search highlighting",
-    "  :%s/old/new/g       - Replace all occurrences",
-    "  cgn                 - Change next search match",
+    "📝 LSP                             🎯 VIM-VISUAL-MULTI              🐛 DAP DEBUGGING",
+    "  gd          - Go to definition     Ctrl+n      - Select word         <leader>db  - Toggle breakpoint",
+    "  K           - Hover documentation  Ctrl+A      - Select all instances <leader>dc  - Continue",
+    "  gi          - Go to implementation Ctrl+↑/↓    - Add cursor above/below <leader>ds - Step over",
+    "  gr          - Go to references     q           - Skip current selection <leader>di - Step into",
+    "  <leader>rn  - Rename symbol        Q           - Remove current cursor <leader>do  - Step out",
+    "  <leader>ca  - Code actions         Esc         - Exit multi-cursor   <leader>dr  - Open repl",
+    "  [d          - Previous diagnostic                                    <leader>du  - Toggle UI",
+    "  ]d          - Next diagnostic",
+    "  <leader>e   - Show diagnostic float",
     "",
-    "📁 BUFFERS & NAVIGATION",
-    "  :ls                 - List buffers",
-    "  :b1, :b2            - Switch to buffer number",
-    "  :bn                 - Next buffer",
-    "  :bp                 - Previous buffer",
-    "  Ctrl+^              - Toggle last buffer",
+    "💡 SEARCH & REPLACE                🌳 LAZYGIT                       🔧 TERMINAL MODE",
+    "  *           - Search word under cursor  <leader>gg  - Open LazyGit       Ctrl+\\ Ctrl+n - Exit terminal mode",
+    "  /pattern    - Search for pattern",
+    "  :noh        - Clear search highlighting",
+    "  :%s/old/new/g - Replace all occurrences",
+    "  cgn         - Change next search match",
     "",
-    "🔍 TELESCOPE (Leader = Space)",
-    "  <leader>ff          - Find files",
-    "  <leader>fg          - Live grep",
-    "  <leader>fb          - Find buffers",
-    "  <leader>fh          - Help tags",
-    "  <leader>fr          - Recent files",
-    "  <leader>fs          - Document symbols",
-    "  <leader>fw          - Workspace symbols",
-    "",
-    "🎯 VIM-VISUAL-MULTI",
-    "  Ctrl+n              - Select word under cursor",
-    "  Ctrl+A              - Select all instances",
-    "  Ctrl+Down/Up        - Add cursor above/below",
-    "  q                   - Skip current selection",
-    "  Q                   - Remove current cursor",
-    "  Esc                 - Exit multi-cursor mode",
-    "",
-    "🐛 DAP DEBUGGING",
-    "  <leader>db          - Toggle breakpoint",
-    "  <leader>dc          - Continue",
-    "  <leader>ds          - Step over",
-    "  <leader>di          - Step into",
-    "  <leader>do          - Step out",
-    "  <leader>dr          - Open repl",
-    "  <leader>du          - Toggle UI",
-    "",
-    "📝 LSP",
-    "  gd                  - Go to definition",
-    "  K                   - Hover documentation",
-    "  <leader>rn          - Rename",
-    "  <leader>ca          - Code actions",
-    "  [d                  - Previous diagnostic",
-    "  ]d                  - Next diagnostic",
-    "",
-    "🔧 TERMINAL MODE",
-    "  Ctrl+\\ Ctrl+n      - Exit terminal mode",
-    "",
-    "💡 SEARCH & REPLACE",
-    "  *                   - Search word under cursor",
-    "  /pattern            - Search for pattern",
-    "  :noh                - Clear search highlighting",
-    "  :%s/old/new/g       - Replace all occurrences",
-    "  cgn                 - Change next search match",
-    "",
-    "═══════════════════════════════════════════════════════════════",
+    "═══════════════════════════════════════════════════════════════════════════════════════════════════════",
     "Press 'q' to close this help buffer",
-    "═══════════════════════════════════════════════════════════════",
+    "═══════════════════════════════════════════════════════════════════════════════════════════════════════",
   }
   
   -- Create a new buffer
