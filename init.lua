@@ -4,6 +4,23 @@ vim.opt.clipboard:append("unnamedplus")
 vim.opt.nu = true
 vim.opt.relativenumber = true
 
+-- Auto-reload files when changed externally
+vim.opt.autoread = true
+vim.api.nvim_create_autocmd({"FocusGained", "BufEnter", "CursorHold", "CursorHoldI"}, {
+  callback = function()
+    if vim.fn.mode() ~= 'c' then
+      vim.cmd("checktime")
+    end
+  end,
+})
+
+-- Set updatetime for CursorHold events
+vim.opt.updatetime = 100
+
+-- Split borders and styling
+vim.opt.fillchars:append({ vert = '│', horiz = '─', vertleft = '┤', vertright = '├', verthoriz = '┼' })
+vim.opt.laststatus = 3  -- Global statusline
+
 -- Set leader key to space
 vim.g.mapleader = " "
 
@@ -250,6 +267,9 @@ require("lazy").setup({
     priority = 1000,
     config = function()
       vim.cmd("colorscheme tokyonight")
+      -- Set split separators after colorscheme loads
+      vim.api.nvim_set_hl(0, 'WinSeparator', { fg = '#7aa2f7', bg = 'NONE' })  -- Tokyo Night blue
+      vim.api.nvim_set_hl(0, 'VertSplit', { fg = '#7aa2f7', bg = 'NONE' })  -- Fallback
     end,
   },
   
@@ -287,6 +307,16 @@ vim.api.nvim_create_user_command('HK', function()
     "  {           - Jump to prev paragraph                                 <leader>fw  - Workspace symbols",
     "  }           - Jump to next paragraph",
     "",
+    "🪟 VIM SPLITS                      🪟 VIM SPLIT NAVIGATION           🪟 VIM SPLIT SIZING",
+    "  :split      - Horizontal split     Ctrl+w h    - Move to left split   Ctrl+w +    - Increase height",
+    "  :vsplit     - Vertical split       Ctrl+w j    - Move to split below  Ctrl+w -    - Decrease height",
+    "  :sp         - Horizontal split     Ctrl+w k    - Move to split above  Ctrl+w >    - Increase width", 
+    "  :vsp        - Vertical split       Ctrl+w l    - Move to right split  Ctrl+w <    - Decrease width",
+    "  Ctrl+w s    - Horizontal split     Ctrl+w w    - Cycle through splits  Ctrl+w =    - Equalize sizes",
+    "  Ctrl+w v    - Vertical split       Ctrl+w p    - Previous split       Ctrl+w |    - Max width",
+    "  Ctrl+w q    - Close split          Ctrl+w o    - Close other splits   Ctrl+w _    - Max height",
+    "  Ctrl+w c    - Close split          :resize 20  - Set height to 20     :vertical resize 50 - Set width",
+    "",
     "📝 LSP                             🎯 VIM-VISUAL-MULTI              🐛 DAP DEBUGGING",
     "  gd          - Go to definition     Ctrl+n      - Select word         <leader>db  - Toggle breakpoint",
     "  K           - Hover documentation  Ctrl+A      - Select all instances <leader>dc  - Continue",
@@ -304,6 +334,13 @@ vim.api.nvim_create_user_command('HK', function()
     "  :noh        - Clear search highlighting",
     "  :%s/old/new/g - Replace all occurrences",
     "  cgn         - Change next search match",
+    "",
+    "📺 TMUX LAYOUTS                    📺 TMUX LAYOUT SHORTCUTS",
+    "  :select-layout even-horizontal    Alt+1  - Even horizontal (vertical panes)",
+    "  :select-layout even-vertical      Alt+2  - Even vertical (horizontal panes)",  
+    "  :select-layout main-horizontal    Alt+3  - Main horizontal (large top pane)",
+    "  :select-layout main-vertical      Alt+4  - Main vertical (large left pane)",
+    "  :select-layout tiled              Alt+5  - Tiled (all panes same size)",
     "",
     "═══════════════════════════════════════════════════════════════════════════════════════════════════════",
     "Press 'q' to close this help buffer",
