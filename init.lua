@@ -4,6 +4,11 @@ vim.opt.clipboard:append("unnamedplus")
 vim.opt.nu = true
 vim.opt.relativenumber = true
 
+-- Folding
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldlevel = 2
+
 -- Auto-reload files when changed externally
 vim.opt.autoread = true
 vim.api.nvim_create_autocmd({"FocusGained", "BufEnter", "CursorHold", "CursorHoldI"}, {
@@ -270,6 +275,21 @@ require("lazy").setup({
     build = "make",
   },
   
+  -- Treesitter for better syntax highlighting and folding
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = { "python", "lua", "javascript", "typescript" },
+        auto_install = true,
+        highlight = { enable = true },
+        indent = { enable = true },
+        fold = { enable = true },
+      })
+    end,
+  },
+  
   -- LazyGit integration
   {
     "kdheepak/lazygit.nvim",
@@ -366,6 +386,14 @@ vim.api.nvim_create_user_command('HK', function()
     "Press 'q' to close this help buffer",
     "═══════════════════════════════════════════════════════════════════════════════════════════════════════",
   }
+  
+  -- Check if help buffer already exists and close it
+  for _, buf_id in ipairs(vim.api.nvim_list_bufs()) do
+    local buf_name = vim.api.nvim_buf_get_name(buf_id)
+    if buf_name:match('Keybindings Help') then
+      vim.api.nvim_buf_delete(buf_id, { force = true })
+    end
+  end
   
   -- Create a new buffer
   local buf = vim.api.nvim_create_buf(false, true)
