@@ -266,6 +266,28 @@ require("lazy").setup({
       vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Recent files" })
       vim.keymap.set("n", "<leader>fs", builtin.lsp_document_symbols, { desc = "Document symbols" })
       vim.keymap.set("n", "<leader>fw", builtin.lsp_workspace_symbols, { desc = "Workspace symbols" })
+      vim.keymap.set("n", "<leader>/", builtin.current_buffer_fuzzy_find, { desc = "Search in current buffer" })
+      
+      -- Visual mode: search for selected text in current buffer
+      vim.keymap.set("v", "<leader>ft", function()
+        -- Get selected text using a more reliable method
+        vim.cmd('normal! "zy')  -- Yank selected text to register z
+        local selected_text = vim.fn.getreg('z')
+        
+        -- Clean up the selected text (remove newlines, trim whitespace)
+        selected_text = selected_text:gsub('\n.*', '')  -- Take only first line if multi-line
+        selected_text = selected_text:match('^%s*(.-)%s*$')  -- Trim whitespace
+        
+        -- Exit visual mode
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'n', true)
+        
+        -- Run telescope with the selected text as default (only if not empty)
+        if selected_text and selected_text ~= "" then
+          builtin.current_buffer_fuzzy_find({ default_text = selected_text })
+        else
+          builtin.current_buffer_fuzzy_find()
+        end
+      end, { desc = "Search selected text in current buffer" })
     end,
   },
   
