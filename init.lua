@@ -252,7 +252,15 @@ require("lazy").setup({
         defaults = {
           mappings = {
             i = {
-              ["<C-h>"] = "which_key"
+              ["<C-h>"] = "which_key",
+              ["<C-d>"] = require("telescope.actions").delete_buffer,
+              ["<C-x>"] = require("telescope.actions").select_horizontal,
+              ["<C-v>"] = require("telescope.actions").select_vertical
+            },
+            n = {
+              ["<C-d>"] = require("telescope.actions").delete_buffer,
+              ["<C-x>"] = require("telescope.actions").select_horizontal,
+              ["<C-v>"] = require("telescope.actions").select_vertical
             }
           }
         }
