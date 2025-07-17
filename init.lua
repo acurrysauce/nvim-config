@@ -426,3 +426,112 @@ end, {})
 
 -- Also create a shorter alias
 vim.api.nvim_create_user_command('Help', 'HK', {})
+
+-- Comment toggle mapping for Ctrl+/
+-- Function to toggle line comments
+local function toggle_comment()
+  local line = vim.api.nvim_get_current_line()
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  
+  -- Get the comment string for the current filetype
+  local commentstring = vim.bo.commentstring
+  if commentstring == "" then
+    -- Default to # for Python-like comments
+    commentstring = "# %s"
+  end
+  
+  -- Extract the comment prefix (remove %s part)
+  local comment_prefix = commentstring:gsub("%%s", ""):gsub("%s+$", "")
+  
+  -- Check if line is already commented
+  local trimmed_line = line:match("^%s*(.-)%s*$")
+  if trimmed_line:match("^" .. vim.pesc(comment_prefix)) then
+    -- Uncomment: remove comment prefix
+    local new_line = line:gsub("^(%s*)" .. vim.pesc(comment_prefix) .. "%s?", "%1")
+    vim.api.nvim_set_current_line(new_line)
+  else
+    -- Comment: add comment prefix
+    local indent = line:match("^%s*")
+    local content = line:match("^%s*(.*)$")
+    if content == "" then
+      -- Empty line, just add comment
+      vim.api.nvim_set_current_line(indent .. comment_prefix)
+    else
+      -- Non-empty line, add comment prefix
+      vim.api.nvim_set_current_line(indent .. comment_prefix .. " " .. content)
+    end
+  end
+end
+
+-- Function to toggle comments in visual line mode
+local function toggle_visual_comment()
+  -- Check if we're in visual line mode
+  local mode = vim.fn.mode()
+  if mode ~= 'V' then
+    return  -- Only work in visual line mode
+  end
+  
+  -- Get current visual selection bounds directly
+  local start_line = vim.fn.line('v')
+  local end_line = vim.fn.line('.')
+  
+  -- Ensure start_line is actually the start
+  if start_line > end_line then
+    start_line, end_line = end_line, start_line
+  end
+  
+  -- Get the comment string for the current filetype
+  local commentstring = vim.bo.commentstring
+  if commentstring == "" then
+    commentstring = "# %s"  -- Default to Python-style comments
+  end
+  
+  -- Extract the comment prefix (remove %s part and trailing spaces)
+  local comment_prefix = commentstring:gsub("%%s", ""):gsub("%s+$", "")
+  
+  -- Check if all selected lines are commented
+  local all_commented = true
+  for line_num = start_line, end_line do
+    local line = vim.api.nvim_buf_get_lines(0, line_num - 1, line_num, false)[1]
+    if line then
+      local trimmed_line = line:match("^%s*(.-)%s*$")
+      -- Skip empty lines when checking if all are commented
+      if trimmed_line and trimmed_line ~= "" then
+        if not trimmed_line:match("^" .. vim.pesc(comment_prefix)) then
+          all_commented = false
+          break
+        end
+      end
+    end
+  end
+  
+  -- Toggle comments for each line
+  for line_num = start_line, end_line do
+    local line = vim.api.nvim_buf_get_lines(0, line_num - 1, line_num, false)[1]
+    if line then
+      local new_line
+      
+      if all_commented then
+        -- Uncomment: remove comment prefix and optional space
+        new_line = line:gsub("^(%s*)" .. vim.pesc(comment_prefix) .. "%s?", "%1")
+      else
+        -- Comment: add comment prefix after any leading whitespace
+        local indent = line:match("^%s*") or ""
+        local content = line:match("^%s*(.*)$") or ""
+        new_line = indent .. comment_prefix .. " " .. content
+      end
+      
+      vim.api.nvim_buf_set_lines(0, line_num - 1, line_num, false, {new_line})
+    end
+  end
+end
+
+-- Map Ctrl+/ to toggle comments in normal, insert, and visual modes
+vim.keymap.set('n', '<C-_>', toggle_comment, { desc = "Toggle line comment" })
+vim.keymap.set('i', '<C-_>', function()
+  toggle_comment()
+end, { desc = "Toggle line comment" })
+-- Only map in visual line mode, not regular visual mode
+vim.keymap.set('x', '<C-_>', function()
+  toggle_visual_comment()
+end, { desc = "Toggle comment on selected lines" })
