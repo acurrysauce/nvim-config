@@ -253,14 +253,24 @@ require("lazy").setup({
           mappings = {
             i = {
               ["<C-h>"] = "which_key",
-              ["<C-d>"] = require("telescope.actions").delete_buffer,
               ["<C-x>"] = require("telescope.actions").select_horizontal,
               ["<C-v>"] = require("telescope.actions").select_vertical
             },
             n = {
-              ["<C-d>"] = require("telescope.actions").delete_buffer,
               ["<C-x>"] = require("telescope.actions").select_horizontal,
               ["<C-v>"] = require("telescope.actions").select_vertical
+            }
+          }
+        },
+        pickers = {
+          buffers = {
+            mappings = {
+              i = {
+                ["<C-d>"] = require("telescope.actions").delete_buffer
+              },
+              n = {
+                ["<C-d>"] = require("telescope.actions").delete_buffer
+              }
             }
           }
         }
@@ -303,6 +313,11 @@ require("lazy").setup({
   {
     "nvim-telescope/telescope-fzf-native.nvim",
     build = "make",
+  },
+  
+  -- File operations (delete, rename, etc.)
+  {
+    "tpope/vim-eunuch",
   },
   
   -- Treesitter for better syntax highlighting and folding
@@ -404,6 +419,14 @@ vim.api.nvim_create_user_command('HK', function()
     "  :noh        - Clear search highlighting",
     "  :%s/old/new/g - Replace all occurrences",
     "  cgn         - Change next search match",
+    "",
+    "📁 FILE OPERATIONS (vim-eunuch)",
+    "  :Delete     - Delete current file and close buffer",
+    "  :Remove     - Alias for :Delete",
+    "  :Rename     - Rename current file",
+    "  :Move       - Move/rename file to new path",
+    "  :Copy       - Copy current file",
+    "  :Mkdir      - Create directory",
     "",
     "📺 TMUX LAYOUTS                    📺 TMUX LAYOUT SHORTCUTS",
     "  :select-layout even-horizontal    Alt+1  - Even horizontal (vertical panes)",
