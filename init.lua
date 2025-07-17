@@ -408,10 +408,12 @@ vim.api.nvim_create_user_command('HK', function()
     "  gi          - Go to implementation Ctrl+↑/↓    - Add cursor above/below <leader>ds - Step over",
     "  gr          - Go to references     q           - Skip current selection <leader>di - Step into",
     "  <leader>rn  - Rename symbol        Q           - Remove current cursor <leader>do  - Step out",
-    "  <leader>ca  - Code actions         Esc         - Exit multi-cursor   <leader>dr  - Open repl",
-    "  [d          - Previous diagnostic                                    <leader>du  - Toggle UI",
-    "  ]d          - Next diagnostic",
-    "  <leader>e   - Show diagnostic float",
+    "  <leader>ca  - Code actions         c           - Change selected text <leader>dr  - Open repl",
+    "  [d          - Previous diagnostic  i           - Insert at beginning  <leader>du  - Toggle UI",
+    "  ]d          - Next diagnostic      a           - Insert at end",
+    "  <leader>e   - Show diagnostic float I           - Insert at line start",
+    "                                     A           - Insert at line end",
+    "                                     Esc         - Exit multi-cursor",
     "",
     "💡 SEARCH & REPLACE                🌳 LAZYGIT                       🔧 TERMINAL MODE",
     "  *           - Search word under cursor  <leader>gg  - Open LazyGit       Ctrl+\\ Ctrl+n - Exit terminal mode",
@@ -479,6 +481,9 @@ end, {})
 
 -- Also create a shorter alias
 vim.api.nvim_create_user_command('Help', 'HK', {})
+
+-- Make x in visual mode delete to black hole register (preserve main register)
+vim.keymap.set('v', 'x', '"_x', { desc = "Delete selection to black hole register" })
 
 -- Comment toggle mapping for Ctrl+/
 -- Function to toggle line comments
