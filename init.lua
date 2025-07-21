@@ -107,6 +107,19 @@ require("lazy").setup({
         capabilities = capabilities,
         on_attach = on_attach 
       })
+      
+      -- Add format on save for Python files using Black
+      -- vim.api.nvim_create_autocmd("BufWritePre", {
+        -- pattern = "*.py",
+        -- callback = function()
+          -- local view = vim.fn.winsaveview()
+          -- vim.cmd("silent !.venv/bin/black %")
+          -- vim.schedule(function()
+            -- vim.cmd("silent! checktime")
+            -- vim.fn.winrestview(view)
+          -- end)
+        -- end,
+      -- })
     end,
   },
   
@@ -403,16 +416,16 @@ vim.api.nvim_create_user_command('HK', function()
     "  Ctrl+w c    - Close split          :resize 20  - Set height to 20     :vertical resize 50 - Set width",
     "",
     "📝 LSP                             🎯 VIM-VISUAL-MULTI              🐛 DAP DEBUGGING",
-    "  gd          - Go to definition     Ctrl+n      - Select word         <leader>db  - Toggle breakpoint",
-    "  K           - Hover documentation  Ctrl+A      - Select all instances <leader>dc  - Continue",
-    "  gi          - Go to implementation Ctrl+↑/↓    - Add cursor above/below <leader>ds - Step over",
-    "  gr          - Go to references     q           - Skip current selection <leader>di - Step into",
-    "  <leader>rn  - Rename symbol        Q           - Remove current cursor <leader>do  - Step out",
+    "  gd          - Go to definition     Ctrl+n      - Select word         <leader>b   - Toggle breakpoint",
+    "  K           - Hover documentation  Ctrl+A      - Select all instances F5          - Continue",
+    "  gi          - Go to implementation Ctrl+↑/↓    - Add cursor above/below F10         - Step over",
+    "  gr          - Go to references     q           - Skip current selection F11         - Step into",
+    "  <leader>rn  - Rename symbol        Q           - Remove current cursor F12         - Step out",
     "  <leader>ca  - Code actions         c           - Change selected text <leader>dr  - Open repl",
-    "  [d          - Previous diagnostic  i           - Insert at beginning  <leader>du  - Toggle UI",
-    "  ]d          - Next diagnostic      a           - Insert at end",
-    "  <leader>e   - Show diagnostic float I           - Insert at line start",
-    "                                     A           - Insert at line end",
+    "  <leader>f   - Format with Black    i           - Insert at beginning  <leader>du  - Toggle UI",
+    "  [d          - Previous diagnostic  a           - Insert at end",
+    "  ]d          - Next diagnostic      I           - Insert at line start",
+    "  <leader>e   - Show diagnostic float A           - Insert at line end",
     "                                     Esc         - Exit multi-cursor",
     "",
     "💡 SEARCH & REPLACE                🌳 LAZYGIT                       🔧 TERMINAL MODE",
@@ -484,6 +497,9 @@ vim.api.nvim_create_user_command('Help', 'HK', {})
 
 -- Make x in visual mode delete to black hole register (preserve main register)
 vim.keymap.set('v', 'x', '"_x', { desc = "Delete selection to black hole register" })
+
+-- Paste in visual mode without overwriting yank register
+vim.keymap.set('v', 'p', '"_dP', { desc = "Paste without overwriting yank register" })
 
 -- Comment toggle mapping for Ctrl+/
 -- Function to toggle line comments
