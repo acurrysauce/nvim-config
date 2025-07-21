@@ -108,18 +108,18 @@ require("lazy").setup({
         on_attach = on_attach 
       })
       
-      -- Add format on save for Python files using Black
-      -- vim.api.nvim_create_autocmd("BufWritePre", {
-        -- pattern = "*.py",
-        -- callback = function()
-          -- local view = vim.fn.winsaveview()
-          -- vim.cmd("silent !.venv/bin/black %")
-          -- vim.schedule(function()
-            -- vim.cmd("silent! checktime")
-            -- vim.fn.winrestview(view)
-          -- end)
-        -- end,
-      -- })
+      -- Manual format command for Python files using Black
+      vim.keymap.set('n', '<leader>f', function()
+        if vim.bo.filetype == 'python' then
+          local view = vim.fn.winsaveview()
+          vim.cmd("w")
+          vim.cmd("silent !.venv/bin/black %")
+          vim.cmd("checktime")
+          vim.fn.winrestview(view)
+        else
+          vim.lsp.buf.format()
+        end
+      end, { desc = "Format current file" })
     end,
   },
   
@@ -182,8 +182,35 @@ require("lazy").setup({
       local dap = require("dap")
       local dapui = require("dapui")
       
-      -- Setup DAP UI
-      dapui.setup()
+      -- Setup DAP UI with REPL on the right
+      dapui.setup({
+        layouts = {
+          {
+            elements = {
+              { id = "scopes", size = 0.30 },
+              { id = "breakpoints", size = 0.20 },
+              { id = "stacks", size = 0.25 },
+              { id = "watches", size = 0.25 },
+            },
+            position = "left",
+            size = 50,
+          },
+          {
+            elements = {
+              { id = "repl", size = 1.0 },
+            },
+            position = "right",
+            size = 80,
+          },
+          {
+            elements = {
+              { id = "console", size = 1.0 },
+            },
+            position = "bottom",
+            size = 10,
+          },
+        },
+      })
       
       -- Setup Python debugging
       require("dap-python").setup("python")
@@ -245,6 +272,73 @@ require("lazy").setup({
       vim.keymap.set("n", "<leader>dz", function() dapui.open({reset=true}) end)
       vim.keymap.set("n", "<leader>dl", dap.run_last)
       vim.keymap.set("n", "<leader>du", dapui.toggle)
+      -- Execute multiline code in DAP REPL
+      vim.keymap.set("v", "<leader>de", function()
+        -- Get selected text
+        vim.cmd('normal! "zy')
+        local selected = vim.fn.getreg('z')
+        
+        -- For complex multiline constructs, use exec() wrapper
+        if selected:match("lambda") or selected:match("for.*in.*}") or selected:match("{%s*\n") then
+          -- Remove common leading whitespace (dedent)
+          local lines = {}
+          for line in selected:gmatch("[^\r\n]+") do
+            table.insert(lines, line)
+          end
+          
+          -- Find minimum indentation (excluding empty lines)
+          local min_indent = math.huge
+          for _, line in ipairs(lines) do
+            if line:match("%S") then  -- Non-empty line
+              local indent = line:match("^%s*"):len()
+              min_indent = math.min(min_indent, indent)
+            end
+          end
+          
+          -- Remove common indentation
+          local dedented_lines = {}
+          for _, line in ipairs(lines) do
+            if line:match("%S") then  -- Non-empty line
+              table.insert(dedented_lines, line:sub(min_indent + 1))
+            else
+              table.insert(dedented_lines, "")  -- Keep empty lines
+            end
+          end
+          
+          local dedented_code = table.concat(dedented_lines, "\\n")
+          local exec_code = 'exec("""' .. dedented_code .. '""")'
+          dap.repl.execute(exec_code)
+        else
+          -- Simple multiline - join with spaces
+          local lines = {}
+          for line in selected:gmatch("[^\r\n]+") do
+            line = line:match("^%s*(.-)%s*$")
+            if line and line ~= "" then
+              table.insert(lines, line)
+            end
+          end
+          
+          if #lines == 0 then return end
+          
+          local first_line = lines[1]
+          if #lines > 1 and (first_line:match("^%w+%s*=") or first_line:match("^[%w%.]+%(")) then
+            local single_line = table.concat(lines, " ")
+            dap.repl.execute(single_line)
+          else
+            local single_line = table.concat(lines, "; ")
+            dap.repl.execute(single_line)
+          end
+        end
+      end, { desc = "Execute selected code in DAP REPL (smart multiline)" })
+      
+      -- Alternative: Open terminal with IPython connected to debugging session
+      vim.keymap.set("n", "<leader>di", function()
+        -- This opens a terminal window where you can run IPython manually
+        vim.cmd("split")
+        vim.cmd("terminal")
+        vim.cmd("startinsert")
+        -- User needs to manually run: python -c "import IPython; IPython.embed()"
+      end, { desc = "Open terminal for IPython debugging" })
     end,
   },
   
