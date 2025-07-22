@@ -228,6 +228,7 @@ require("lazy").setup({
           name = 'Launch file',
           program = '${file}',
           cwd = '${workspaceFolder}',  -- Use project root as working directory
+          redirectOutput = false,  -- Don't redirect output to DAP
           pythonPath = function()
             -- Try to find virtual environment, fallback to system python
             local venv_path = vim.fn.getcwd() .. '/.venv/bin/python'
