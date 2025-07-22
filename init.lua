@@ -22,6 +22,11 @@ vim.api.nvim_create_autocmd({"FocusGained", "BufEnter", "CursorHold", "CursorHol
 -- Set updatetime for CursorHold events
 vim.opt.updatetime = 100
 
+-- Horizontal scroll settings
+vim.opt.wrap = true        -- Enable line wrapping (or false if you prefer scrolling)
+vim.opt.sidescroll = 1     -- Scroll horizontally one character at a time
+vim.opt.sidescrolloff = 5  -- Keep 5 characters visible when scrolling horizontally
+
 -- Split borders and styling
 vim.opt.fillchars:append({ vert = '│', horiz = '─', vertleft = '┤', vertright = '├', verthoriz = '┼' })
 vim.opt.laststatus = 3  -- Global statusline
@@ -272,12 +277,8 @@ require("lazy").setup({
       vim.keymap.set("n", "<leader>dz", function() dapui.open({reset=true}) end)
       vim.keymap.set("n", "<leader>dl", dap.run_last)
       vim.keymap.set("n", "<leader>du", dapui.toggle)
-      -- Execute multiline code in DAP REPL
-      vim.keymap.set("v", "<leader>de", function()
-        -- Get selected text
-        vim.cmd('normal! "zy')
-        local selected = vim.fn.getreg('z')
-        
+      -- Helper function for processing multiline code
+      local function process_multiline_code(selected, wrap_in_print)
         -- For complex multiline constructs, use exec() wrapper
         if selected:match("lambda") or selected:match("for.*in.*}") or selected:match("{%s*\n") then
           -- Remove common leading whitespace (dedent)
@@ -306,8 +307,21 @@ require("lazy").setup({
           end
           
           local dedented_code = table.concat(dedented_lines, "\\n")
-          local exec_code = 'exec("""' .. dedented_code .. '""")'
-          dap.repl.execute(exec_code)
+          if wrap_in_print then
+            -- For assignments, execute then print the variable
+            local var_name = dedented_lines[1]:match("^(%w+)%s*=")
+            if var_name then
+              local exec_code = 'exec("""' .. dedented_code .. '\\nprint(' .. var_name .. ')""")'
+              return exec_code
+            else
+              -- For expressions, add print inside the exec
+              local exec_code = 'exec("""print(' .. dedented_code .. ')""")'
+              return exec_code
+            end
+          else
+            local exec_code = 'exec("""' .. dedented_code .. '""")'
+            return exec_code
+          end
         else
           -- Simple multiline - join with spaces
           local lines = {}
@@ -318,18 +332,43 @@ require("lazy").setup({
             end
           end
           
-          if #lines == 0 then return end
+          if #lines == 0 then return nil end
           
           local first_line = lines[1]
+          local code
           if #lines > 1 and (first_line:match("^%w+%s*=") or first_line:match("^[%w%.]+%(")) then
-            local single_line = table.concat(lines, " ")
-            dap.repl.execute(single_line)
+            code = table.concat(lines, " ")
           else
-            local single_line = table.concat(lines, "; ")
-            dap.repl.execute(single_line)
+            code = table.concat(lines, "; ")
+          end
+          
+          if wrap_in_print then
+            return "print(" .. code .. ")"
+          else
+            return code
           end
         end
+      end
+      
+      -- Execute multiline code in DAP REPL
+      vim.keymap.set("v", "<leader>de", function()
+        vim.cmd('normal! "zy')
+        local selected = vim.fn.getreg('z')
+        local code = process_multiline_code(selected, false)
+        if code then
+          dap.repl.execute(code)
+        end
       end, { desc = "Execute selected code in DAP REPL (smart multiline)" })
+      
+      -- Execute and print multiline code in DAP REPL
+      vim.keymap.set("v", "<leader>dp", function()
+        vim.cmd('normal! "zy')
+        local selected = vim.fn.getreg('z')
+        local code = process_multiline_code(selected, true)
+        if code then
+          dap.repl.execute(code)
+        end
+      end, { desc = "Print selected code in DAP REPL (smart multiline)" })
       
       -- Alternative: Open terminal with IPython connected to debugging session
       vim.keymap.set("n", "<leader>di", function()
