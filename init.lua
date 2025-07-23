@@ -205,7 +205,7 @@ require("lazy").setup({
               { id = "repl", size = 1.0 },
             },
             position = "right",
-            size = 80,
+            size = 60,
           },
           {
             elements = {
@@ -228,7 +228,7 @@ require("lazy").setup({
           name = 'Launch file',
           program = '${file}',
           cwd = '${workspaceFolder}',  -- Use project root as working directory
-          redirectOutput = false,  -- Don't redirect output to DAP
+          redirectOutput = true,  -- Redirect output to DAP Console
           pythonPath = function()
             -- Try to find virtual environment, fallback to system python
             local venv_path = vim.fn.getcwd() .. '/.venv/bin/python'
@@ -634,6 +634,40 @@ vim.keymap.set('v', 'x', '"_x', { desc = "Delete selection to black hole registe
 
 -- Paste in visual mode without overwriting yank register
 vim.keymap.set('v', 'p', '"_dP', { desc = "Paste without overwriting yank register" })
+
+-- Map Page Up/Down to Ctrl+U/D in all modes
+vim.keymap.set('n', '<PageUp>', '<C-u>', { desc = "Page up (half page)" })
+vim.keymap.set('n', '<PageDown>', '<C-d>', { desc = "Page down (half page)" })
+vim.keymap.set('i', '<PageUp>', '<C-o><C-u>', { desc = "Page up in insert mode" })
+vim.keymap.set('i', '<PageDown>', '<C-o><C-d>', { desc = "Page down in insert mode" })
+vim.keymap.set('v', '<PageUp>', '<C-u>', { desc = "Page up in visual mode" })
+vim.keymap.set('v', '<PageDown>', '<C-d>', { desc = "Page down in visual mode" })
+
+-- Smart Home key with double-tap for beginning of line
+local home_last_press = 0
+vim.keymap.set('n', '<Home>', function()
+  local current_time = vim.loop.now()
+  if current_time - home_last_press < 500 then  -- 500ms double-tap window
+    vim.cmd('normal! 0')  -- Go to beginning of line (column 0)
+    home_last_press = 0
+  else
+    vim.cmd('normal! ^')  -- Go to first non-whitespace character
+    home_last_press = current_time
+  end
+end, { desc = "Smart Home: first non-whitespace, double-tap for column 0" })
+
+vim.keymap.set('i', '<Home>', function()
+  local current_time = vim.loop.now()
+  if current_time - home_last_press < 500 then
+    vim.cmd('normal! 0')
+    home_last_press = 0
+  else
+    vim.cmd('normal! ^')
+    home_last_press = current_time
+  end
+end, { desc = "Smart Home in insert mode" })
+
+vim.keymap.set('v', '<Home>', '^', { desc = "Go to first non-whitespace character in visual mode" })
 
 -- Comment toggle mapping for Ctrl+/
 -- Function to toggle line comments
