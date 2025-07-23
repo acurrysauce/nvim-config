@@ -267,6 +267,7 @@ require("lazy").setup({
       
       -- Keybindings
       vim.keymap.set("n", "<F5>", dap.continue)
+      vim.keymap.set("n", "<S-F5>", dap.terminate, { desc = "Stop debugging" })
       vim.keymap.set("n", "<F10>", dap.step_over)
       vim.keymap.set("n", "<F11>", dap.step_into)
       vim.keymap.set("n", "<F12>", dap.step_out)
