@@ -552,15 +552,15 @@ vim.api.nvim_create_user_command('HK', function()
     "",
     "📝 LSP                             🎯 VIM-VISUAL-MULTI              🐛 DAP DEBUGGING",
     "  gd          - Go to definition     Ctrl+n      - Select word         <leader>b   - Toggle breakpoint",
-    "  K           - Hover documentation  Ctrl+A      - Select all instances F5          - Continue",
-    "  gi          - Go to implementation Ctrl+↑/↓    - Add cursor above/below F10         - Step over",
-    "  gr          - Go to references     q           - Skip current selection F11         - Step into",
-    "  <leader>rn  - Rename symbol        Q           - Remove current cursor F12         - Step out",
-    "  <leader>ca  - Code actions         c           - Change selected text <leader>dr  - Open repl",
-    "  <leader>f   - Format with Black    i           - Insert at beginning  <leader>du  - Toggle UI",
-    "  [d          - Previous diagnostic  a           - Insert at end",
-    "  ]d          - Next diagnostic      I           - Insert at line start",
-    "  <leader>e   - Show diagnostic float A           - Insert at line end",
+    "  K           - Hover documentation  Ctrl+/      - Start regex selection F5          - Continue",
+    "  gi          - Go to implementation Ctrl+A      - Select all instances F10         - Step over",
+    "  gr          - Go to references     Ctrl+↑/↓    - Add cursor above/below F11         - Step into",
+    "  <leader>rn  - Rename symbol        n           - Go to next instance  F12         - Step out",
+    "  <leader>ca  - Code actions         N           - Go to previous instance <leader>dr  - Open repl",
+    "  <leader>f   - Format with Black    q           - Skip current selection <leader>du  - Toggle UI",
+    "  [d          - Previous diagnostic  Q           - Remove current cursor",
+    "  ]d          - Next diagnostic      c           - Change selected text",
+    "  <leader>e   - Show diagnostic float i/a/I/A     - Insert modes",
     "                                     Esc         - Exit multi-cursor",
     "",
     "💡 SEARCH & REPLACE                🌳 LAZYGIT                       🔧 TERMINAL MODE",
@@ -569,6 +569,12 @@ vim.api.nvim_create_user_command('HK', function()
     "  :noh        - Clear search highlighting",
     "  :%s/old/new/g - Replace all occurrences",
     "  cgn         - Change next search match",
+    "",
+    "🔢 NUMBER INCREMENT/DECREMENT",
+    "  Ctrl+a      - Add 1 to number under cursor",
+    "  Ctrl+x      - Subtract 1 from number under cursor",
+    "  5Ctrl+a     - Add 5 to number (prefix with count)",
+    "  10Ctrl+x    - Subtract 10 from number (prefix with count)",
     "",
     "📁 FILE OPERATIONS (vim-eunuch)",
     "  :Delete     - Delete current file and close buffer",
@@ -778,3 +784,43 @@ end, { desc = "Toggle line comment" })
 vim.keymap.set('x', '<C-_>', function()
   toggle_visual_comment()
 end, { desc = "Toggle comment on selected lines" })
+
+-- Yank current Python file as module path for debugging
+vim.keymap.set('n', '<leader>ym', function()
+  local file = vim.fn.expand('%:p')
+  
+  -- Only work with .py files
+  if not string.match(file, '%.py$') then
+    print("Not a Python file")
+    return
+  end
+  
+  -- Get directory of current file
+  local dir = vim.fn.fnamemodify(file, ':h')
+  local filename = vim.fn.fnamemodify(file, ':t:r')  -- filename without extension
+  
+  -- Walk up directories to find package root (where __init__.py stops existing in parent)
+  local module_parts = {filename}
+  local current_dir = dir
+  
+  while true do
+    -- Check if current directory has __init__.py (making it a package)
+    if vim.fn.filereadable(current_dir .. '/__init__.py') == 1 then
+      -- This is a package directory, add its name to module path
+      local dirname = vim.fn.fnamemodify(current_dir, ':t')
+      table.insert(module_parts, 1, dirname)
+      
+      -- Move up one directory
+      local parent = vim.fn.fnamemodify(current_dir, ':h')
+      if parent == current_dir then break end  -- Reached filesystem root
+      current_dir = parent
+    else
+      -- No __init__.py found, this is not a package directory
+      break
+    end
+  end
+  
+  local module = table.concat(module_parts, '.')
+  vim.fn.setreg('+', module)
+  print("Yanked module: " .. module)
+end, { desc = 'Yank current file as module path' })
