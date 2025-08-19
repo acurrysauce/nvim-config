@@ -66,17 +66,6 @@ require("lazy").setup({
       "neovim/nvim-lspconfig",
     },
     config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "pyright", "ts_ls" },
-      })
-    end,
-  },
-  
-  -- LSP configuration
-  {
-    "neovim/nvim-lspconfig",
-    config = function()
-      local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
       
       -- LSP keybindings
@@ -99,21 +88,72 @@ require("lazy").setup({
         vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, opts)
       end
       
-      -- Setup LSP servers with completion capabilities and keybindings
-      lspconfig.lua_ls.setup({ 
-        capabilities = capabilities,
-        on_attach = on_attach 
-      })
-      lspconfig.pyright.setup({ 
-        capabilities = capabilities,
-        on_attach = on_attach 
-      })
-      lspconfig.ts_ls.setup({ 
-        capabilities = capabilities,
-        on_attach = on_attach 
+      require("mason-lspconfig").setup({
+        ensure_installed = { "lua_ls", "pyright", "ts_ls", "html", "cssls" },
+        automatic_installation = false,
       })
       
-      -- Manual format command for Python files using Black
+      -- Manual setup for all servers to ensure our configuration takes precedence
+      local lspconfig = require("lspconfig")
+      
+      lspconfig.lua_ls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+      })
+      
+      lspconfig.pyright.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+      })
+      
+      lspconfig.ts_ls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+      })
+      
+      lspconfig.html.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        filetypes = { "html", "htmldjango", "templ" },
+        init_options = {
+          provideFormatter = true,
+          configurationSection = { "html", "css", "javascript" },
+          embeddedLanguages = {
+            css = true,
+            javascript = true
+          }
+        },
+        settings = {
+          html = {
+            format = {
+              indentInnerHtml = false,
+              indentHandlebars = false,
+              insertFinalNewline = true,
+              tabSize = 2,
+              insertSpaces = true,
+              wrapLineLength = 120,
+              unformatted = "wbr",
+              contentUnformatted = "pre,code,textarea",
+              endWithNewline = false,
+              extraLiners = "head, body, /html",
+              wrapAttributes = "auto"
+            }
+          }
+        }
+      })
+      
+      lspconfig.cssls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+      })
+    end,
+  },
+  
+  -- LSP configuration
+  {
+    "neovim/nvim-lspconfig",
+    config = function()
+      -- Format command for different file types
       vim.keymap.set('n', '<leader>f', function()
         if vim.bo.filetype == 'python' then
           local view = vim.fn.winsaveview()
@@ -641,6 +681,17 @@ vim.keymap.set('v', 'x', '"_x', { desc = "Delete selection to black hole registe
 
 -- Paste in visual mode without overwriting yank register
 vim.keymap.set('v', 'p', '"_dP', { desc = "Paste without overwriting yank register" })
+
+-- HTML/Django template settings
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = {"html", "htmldjango"},
+  callback = function()
+    vim.opt_local.expandtab = true
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.tabstop = 2
+    vim.opt_local.softtabstop = 2
+  end,
+})
 
 -- Map Page Up/Down to Ctrl+U/D in all modes
 vim.keymap.set('n', '<PageUp>', '<C-u>', { desc = "Page up (half page)" })
