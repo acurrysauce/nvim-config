@@ -133,10 +133,11 @@ require("lazy").setup({
               insertSpaces = true,
               wrapLineLength = 120,
               unformatted = "wbr",
-              contentUnformatted = "pre,code,textarea",
+              contentUnformatted = "pre,code,textarea,script[type='text/django-template']",
               endWithNewline = false,
               extraLiners = "head, body, /html",
-              wrapAttributes = "auto"
+              wrapAttributes = "auto",
+              ignoreCustomFragments = {"{%[\\s\\S]*?%}", "{{[\\s\\S]*?}}}"}
             }
           }
         }
