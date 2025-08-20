@@ -11,7 +11,7 @@ vim.opt.foldlevel = 2
 
 -- Auto-reload files when changed externally
 vim.opt.autoread = true
-vim.api.nvim_create_autocmd({"FocusGained", "BufEnter", "CursorHold", "CursorHoldI"}, {
+vim.api.nvim_create_autocmd({"FocusGained", "BufEnter", "CursorHold", "CursorHoldI", "WinEnter"}, {
   callback = function()
     if vim.fn.mode() ~= 'c' then
       vim.cmd("checktime")
@@ -114,7 +114,7 @@ require("lazy").setup({
       lspconfig.html.setup({
         capabilities = capabilities,
         on_attach = on_attach,
-        filetypes = { "html", "htmldjango", "templ" },
+        filetypes = { "html", "templ" },
         init_options = {
           provideFormatter = true,
           configurationSection = { "html", "css", "javascript" },
@@ -131,13 +131,15 @@ require("lazy").setup({
               insertFinalNewline = true,
               tabSize = 2,
               insertSpaces = true,
-              wrapLineLength = 120,
+              wrapLineLength = 60,  -- Even shorter to force more wrapping
               unformatted = "wbr",
-              contentUnformatted = "pre,code,textarea,script[type='text/django-template']",
+              contentUnformatted = "pre,code,textarea,{%,%}",  -- Treat Django tags as unformatted content
               endWithNewline = false,
               extraLiners = "head, body, /html",
-              wrapAttributes = "auto",
-              ignoreCustomFragments = {"{%[\\s\\S]*?%}", "{{[\\s\\S]*?}}}"}
+              wrapAttributes = "force",  -- Force attributes onto separate lines always
+              wrapAttributesIndentSize = 8,  -- More indentation for wrapped attributes
+              preserveNewLines = true,  -- Preserve existing newlines
+              ignoreCustomFragments = {"{%.*?%}", "{{.*?}}"}  -- Regex to ignore Django syntax
             }
           }
         }
@@ -160,6 +162,12 @@ require("lazy").setup({
           local view = vim.fn.winsaveview()
           vim.cmd("w")
           vim.cmd("silent !.venv/bin/black %")
+          vim.cmd("checktime")
+          vim.fn.winrestview(view)
+        elseif vim.bo.filetype == 'htmldjango' then
+          local view = vim.fn.winsaveview()
+          vim.cmd("w")
+          vim.cmd("silent !djlint --reformat %")
           vim.cmd("checktime")
           vim.fn.winrestview(view)
         else
