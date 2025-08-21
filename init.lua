@@ -58,13 +58,9 @@ require("lazy").setup({
     end,
   },
   
-  -- Mason LSP config integration
+  -- LSP configuration
   {
-    "williamboman/mason-lspconfig.nvim",
-    dependencies = {
-      "williamboman/mason.nvim",
-      "neovim/nvim-lspconfig",
-    },
+    "neovim/nvim-lspconfig",
     config = function()
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
       
@@ -88,20 +84,15 @@ require("lazy").setup({
         vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, opts)
       end
       
-      require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "pyright", "ts_ls", "html", "cssls" },
-        automatic_installation = false,
-      })
-      
-      -- Manual setup for all servers to ensure our configuration takes precedence
+      -- Configure servers manually
       local lspconfig = require("lspconfig")
       
-      lspconfig.lua_ls.setup({
+      lspconfig.pyright.setup({
         capabilities = capabilities,
         on_attach = on_attach,
       })
       
-      lspconfig.pyright.setup({
+      lspconfig.lua_ls.setup({
         capabilities = capabilities,
         on_attach = on_attach,
       })
@@ -114,48 +105,13 @@ require("lazy").setup({
       lspconfig.html.setup({
         capabilities = capabilities,
         on_attach = on_attach,
-        filetypes = { "html", "templ" },
-        init_options = {
-          provideFormatter = true,
-          configurationSection = { "html", "css", "javascript" },
-          embeddedLanguages = {
-            css = true,
-            javascript = true
-          }
-        },
-        settings = {
-          html = {
-            format = {
-              indentInnerHtml = false,
-              indentHandlebars = false,
-              insertFinalNewline = true,
-              tabSize = 2,
-              insertSpaces = true,
-              wrapLineLength = 60,  -- Even shorter to force more wrapping
-              unformatted = "wbr",
-              contentUnformatted = "pre,code,textarea,{%,%}",  -- Treat Django tags as unformatted content
-              endWithNewline = false,
-              extraLiners = "head, body, /html",
-              wrapAttributes = "force",  -- Force attributes onto separate lines always
-              wrapAttributesIndentSize = 8,  -- More indentation for wrapped attributes
-              preserveNewLines = true,  -- Preserve existing newlines
-              ignoreCustomFragments = {"{%.*?%}", "{{.*?}}"}  -- Regex to ignore Django syntax
-            }
-          }
-        }
       })
       
       lspconfig.cssls.setup({
         capabilities = capabilities,
         on_attach = on_attach,
       })
-    end,
-  },
-  
-  -- LSP configuration
-  {
-    "neovim/nvim-lspconfig",
-    config = function()
+
       -- Format command for different file types
       vim.keymap.set('n', '<leader>f', function()
         if vim.bo.filetype == 'python' then
