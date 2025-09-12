@@ -544,6 +544,7 @@ vim.api.nvim_create_user_command('HK', function()
     "  Ctrl+d      - Scroll down half page                                  <leader>fs  - Document symbols",
     "  {           - Jump to prev paragraph                                 <leader>fw  - Workspace symbols",
     "  }           - Jump to next paragraph",
+    "  Ctrl+q      - Visual block mode (use instead of Ctrl+v in tmux)",
     "",
     "🪟 VIM SPLITS                      🪟 VIM SPLIT NAVIGATION           🪟 VIM SPLIT SIZING",
     "  :split      - Horizontal split     Ctrl+w h    - Move to left split   Ctrl+w +    - Increase height",
