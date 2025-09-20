@@ -90,6 +90,7 @@ require("lazy").setup({
       lspconfig.pyright.setup({
         capabilities = capabilities,
         on_attach = on_attach,
+        root_dir = lspconfig.util.find_git_ancestor,  -- Always use git root for monorepo
       })
       
       lspconfig.lua_ls.setup({
